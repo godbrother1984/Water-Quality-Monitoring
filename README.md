@@ -53,16 +53,31 @@
 |   |-- image_proxy.php
 |   |-- settings.php
 |   |-- upload_handler.php
-|   -- verify_pin.php | |-- assets/ |   |-- js/ |   |   |-- modules/ |   |   |   |-- config.js |   |   |   |-- dashboard.js |   |   |   |-- graph.js |   |   |   |-- helpers.js |   |   |   |-- mediaPicker.js |   |   |   |-- pinManager.js |   |   |   |-- settings.js |   |   |   |-- settingsUI.js |   |   |   |-- state.js |   |   |   -- status.js
-|   |   |
-|   |   -- app.js |   | |   -- style.css
-|
+|   |-- verify_pin.php 
+|-- assets/ 
+|   |-- js/ 
+|   |   |-- modules/ 
+|   |   |   |-- config.js 
+|   |   |   |-- dashboard.js 
+|   |   |   |-- graph.js 
+|   |   |   |-- helpers.js 
+|   |   |   |-- mediaPicker.js 
+|   |   |   |-- pinManager.js 
+|   |   |   |-- settings.js 
+|   |   |   |-- settingsUI.js 
+|   |   |   |-- state.js 
+|   |   |   -- status.js
+|   |   |-- app.js 
+|   |-- style.css
 |-- data/
 |   |-- .htaccess
 |   |-- settings.json
 |   |-- settings.defaults.json
 |   |-- changelog.json
-|   -- graph_history_YYYY-MM.jsonl | |-- uploads/ |   |-- (ไฟล์ที่ผู้ใช้อัปโหลด) | -- index.php
+|   |-- graph_history_YYYY-MM.jsonl 
+|-- uploads/ 
+|   |-- (ไฟล์ที่ผู้ใช้อัปโหลด) 
+|-- index.php
 
 
 ### คำอธิบายแต่ละส่วน
