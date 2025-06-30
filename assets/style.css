@@ -1,0 +1,221 @@
+/* คัดลอกเนื้อหา CSS ทั้งหมดจากแท็ก <style> ในไฟล์ home.html เดิมมาวางที่นี่ */
+body { font-family: 'Inter', sans-serif; background: #000000; transition: background-color 0.5s; }
+nav { 
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+nav.visible {
+    transform: translateY(0);
+}
+.nav-btn { background-color: #1f2937; color: #d1d5db; transition: all 0.2s ease-in-out; }
+.nav-btn.active { background-color: #facc15; color: #111827; font-weight: bold; }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.5s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* NEW HMI STYLES */
+.dashboard-background {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.dashboard-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); /* Semi-transparent overlay */
+}
+.dashboard-content {
+    position: relative;
+    z-index: 2;
+}
+.status-light {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #4b5563; /* Gray - Off */
+    transition: background-color 0.3s;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
+}
+.status-light.active {
+    background-color: #4ade80; /* Green - On */
+    box-shadow: 0 0 10px #4ade80, inset 0 0 5px rgba(255,255,255,0.4);
+}
+
+
+/* Styles for the brush chart */
+#brush-chart-container {
+    position: relative;
+    height: 100px; /* Adjust height as needed */
+    cursor: default;
+}
+#brush {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(100, 150, 255, 0.3);
+    border-left: 2px solid #6495ED;
+    border-right: 2px solid #6495ED;
+    cursor: move;
+    z-index: 10;
+}
+.brush-handle {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 40px;
+    background-color: #6495ED;
+    border: 1px solid #fff;
+    border-radius: 3px;
+}
+.brush-handle.left {
+    left: -5px;
+    cursor: ew-resize;
+}
+.brush-handle.right {
+    right: -5px;
+    cursor: ew-resize;
+}
+
+.settings-input:focus { outline: none !important; border-color: #4f46e5 !important; box-shadow: 0 0 0 1px #4f46e5 !important; }
+
+/* Tooltip Styles */
+.tooltip-trigger {
+    position: relative;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+.tooltip-trigger .tooltip-content {
+    visibility: hidden;
+    width: 320px; /* Increased width */
+    background-color: #334155;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px; /* Increased padding */
+    position: absolute;
+    z-index: 50; /* Ensure tooltip is on top */
+    bottom: 130%; /* Position above the trigger */
+    left: 50%;
+    margin-left: -160px; /* Use half of the new width to center */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem; /* Smaller font */
+    line-height: 1.4;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    pointer-events: none; 
+}
+
+.tooltip-trigger .tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%; 
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #334155 transparent transparent transparent;
+}
+
+.tooltip-trigger:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+}
+
+.settings-footer {
+    position: sticky;
+    bottom: -32px; 
+    margin-left: -32px; 
+    margin-right: -32px; 
+    padding: 24px 32px 32px 32px;
+    background-color: rgba(249, 250, 251, 0.8); /* gray-50 with opacity */
+    border-top: 1px solid #e5e7eb; /* gray-200 */
+    backdrop-filter: blur(8px);
+    border-bottom-left-radius: 0.75rem; /* rounded-xl */
+    border-bottom-right-radius: 0.75rem; /* rounded-xl */
+}
+
+/* Drag and Drop Styles */
+.drag-handle {
+    cursor: grab;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af; /* gray-400 */
+    padding: 1rem;
+}
+.drag-handle:hover {
+    color: #4b5563; /* gray-600 */
+}
+.parameter-row, .rotation-row {
+    padding-left: 48px !important; /* Make space for handle */
+}
+.parameter-row.dragging, .rotation-row.dragging {
+    opacity: 0.5;
+    background: #e0e7ff; /* indigo-100 */
+}
+
+/* PIN Modal Styles */
+#pin-input {
+    letter-spacing: 16px; /* Adjusted spacing */
+    text-align: center;
+    caret-color: #4f46e5;
+    -webkit-text-security: disc;
+    -moz-text-security: disc;
+    text-security: disc;
+    padding-left: 20px; /* Adjust padding to center text */
+}
+.keypad-btn:active {
+    background-color: #9ca3af; /* gray-400 */
+}
+
+/* Image Picker Styles */
+.image-picker-tabs button {
+    padding: 8px 12px;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+}
+.image-picker-tabs button.active {
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+    font-weight: 600;
+}
+.image-picker-content {
+    display: none;
+}
+.image-picker-content.active {
+    display: block;
+}
+
+/* Dashboard content rotation */
+.dashboard-main-content {
+    display: none;
+}
+ .dashboard-main-content.active {
+    display: block;
+    animation: fadeIn 0.5s;
+}
+#dashboard-video, #dashboard-image, #dashboard-youtube-iframe {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Changed from cover to contain */
+}
+
+/* Fullscreen Ad Mode */
+.ad-mode #dashboard-ui-elements {
+    display: none;
+}
+.ad-mode .dashboard-main-content.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    background: #000;
+}

@@ -1,0 +1,40 @@
+[2025-06-30 02:43:23] --- POST request received ---
+[2025-06-30 02:43:23] Raw input data length: 29
+[2025-06-30 02:43:23] JSON decoded successfully.
+[2025-06-30 02:43:23] Attempting to restore defaults...
+[2025-06-30 02:43:23] Sending response (HTTP 500): {"error":"Default settings file not found."}
+[2025-06-30 04:03:12] --- POST request received ---
+[2025-06-30 04:03:12] Raw input data length: 29
+[2025-06-30 04:03:12] JSON decoded successfully.
+[2025-06-30 04:03:12] Attempting to restore defaults...
+[2025-06-30 04:03:12] Sending response (HTTP 200): {"success":true,"message":"Defaults restored successfully."}
+[2025-06-30 04:03:37] --- POST request received ---
+[2025-06-30 04:03:37] Raw input data length: 2427
+[2025-06-30 04:03:37] JSON decoded successfully.
+[2025-06-30 04:03:37] Attempting to save new settings...
+[2025-06-30 04:03:37] Settings saved successfully.
+[2025-06-30 04:03:37] Sending response (HTTP 200): {"success":true,"message":"Settings saved successfully."}
+[2025-06-30 04:15:52] --- POST request received ---
+[2025-06-30 04:15:52] Raw input data length: 2426
+[2025-06-30 04:15:52] JSON decoded successfully.
+[2025-06-30 04:15:52] Attempting to save new settings...
+[2025-06-30 04:15:52] Settings saved successfully.
+[2025-06-30 04:15:52] Sending response (HTTP 200): {"success":true,"message":"Settings saved successfully."}
+[2025-06-30 04:40:33] --- POST request received ---
+[2025-06-30 04:40:33] Raw input data length: 2427
+[2025-06-30 04:40:33] JSON decoded successfully.
+[2025-06-30 04:40:33] Attempting to save new settings...
+[2025-06-30 04:40:33] Settings saved successfully.
+[2025-06-30 04:40:33] Sending response (HTTP 200): {"success":true,"message":"Settings saved successfully."}
+[2025-06-30 04:40:46] --- POST request received ---
+[2025-06-30 04:40:46] Raw input data length: 2427
+[2025-06-30 04:40:46] JSON decoded successfully.
+[2025-06-30 04:40:46] Attempting to save new settings...
+[2025-06-30 04:40:46] Settings saved successfully.
+[2025-06-30 04:40:46] Sending response (HTTP 200): {"success":true,"message":"Settings saved successfully."}
+[2025-06-30 05:46:00] --- POST request received ---
+[2025-06-30 05:46:00] Raw input data length: 2466
+[2025-06-30 05:46:00] JSON decoded successfully.
+[2025-06-30 05:46:00] Attempting to save new settings...
+[2025-06-30 05:46:00] Settings saved successfully.
+[2025-06-30 05:46:00] Sending response (HTTP 200): {"success":true,"message":"Settings saved successfully."}

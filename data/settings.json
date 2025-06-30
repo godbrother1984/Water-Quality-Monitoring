@@ -1,0 +1,186 @@
+{
+    "pinHash": "$2y$10$Kw256Pot5CSzZ.35JIPfwOOpNgvQ7zJ12p0dryf4pvokuLhirPdRG",
+    "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
+    "interval": 5,
+    "retentionHours": 720,
+    "headerCaption": "Water Quality Monitoring",
+    "headerSubCaption": "Real-time Environmental Data",
+    "headerCaptionFontSize": 24,
+    "headerSubcaptionFontSize": 18,
+    "headerBackgroundColor": "#1f2937",
+    "mainBackgroundColor": "#000000",
+    "showLogo": true,
+    "showHeaderBg": true,
+    "showMainBg": true,
+    "logo": {
+        "type": "url",
+        "value": ""
+    },
+    "headerBackground": {
+        "type": "url",
+        "value": ""
+    },
+    "mainBackground": {
+        "type": "url",
+        "value": ""
+    },
+    "contentRotation": {
+        "enabled": true,
+        "sequence": [
+            {
+                "type": "graph",
+                "enabled": true,
+                "duration": 5
+            },
+            {
+                "type": "image",
+                "enabled": true,
+                "duration": 5,
+                "source": {
+                    "type": "url",
+                    "value": "uploads/media_68620a1e98e320.07101060.png"
+                }
+            },
+            {
+                "type": "video",
+                "enabled": true,
+                "duration": 5,
+                "source": {
+                    "type": "url",
+                    "value": "https://www.youtube.com/watch?v=CwLQPVqh_fc"
+                }
+            },
+            {
+                "type": "video",
+                "enabled": true,
+                "duration": 5,
+                "source": {
+                    "type": "url",
+                    "value": "uploads/media_68620a468fa6e3.43188478.mp4"
+                }
+            }
+        ]
+    },
+    "barChartStyling": {
+        "barColor": "#9542c2",
+        "rangeTextColor": "#ffffff",
+        "labelTextColor": "#ffffff",
+        "valueTextColor": "#ffffff",
+        "unitTextColor": "#d1d5db",
+        "rangeFontSize": 18,
+        "labelFontSize": 18,
+        "valueFontSize": 18,
+        "unitFontSize": 18
+    },
+    "modeStatusKey": "operation_mode",
+    "operationModes": [
+        {
+            "name": "MEASURING",
+            "value": "1"
+        },
+        {
+            "name": "CALIBRATION",
+            "value": "2"
+        },
+        {
+            "name": "DRAIN",
+            "value": "3"
+        },
+        {
+            "name": "NORMAL",
+            "value": "4"
+        }
+    ],
+    "params": [
+        {
+            "displayName": "Suspended Solids",
+            "jsonKey": "ai1",
+            "unit": "mg/L",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x*5",
+            "min": 0,
+            "max": 50,
+            "displayMax": 40,
+            "sim_initial": 8.9,
+            "sim_range": 1,
+            "sim_min": 5,
+            "sim_max": 45
+        },
+        {
+            "displayName": "Turbidity",
+            "jsonKey": "ai2",
+            "unit": "NTU",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x",
+            "min": 0,
+            "max": 4000,
+            "displayMax": 3500,
+            "sim_initial": 15.4,
+            "sim_range": 2,
+            "sim_min": 5,
+            "sim_max": 50
+        },
+        {
+            "displayName": "pH",
+            "jsonKey": "ai3",
+            "unit": "",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x",
+            "min": 0,
+            "max": 14,
+            "displayMax": 14,
+            "sim_initial": 7.5,
+            "sim_range": 0.2,
+            "sim_min": 5.5,
+            "sim_max": 8.5
+        },
+        {
+            "displayName": "Temperature",
+            "jsonKey": "ai4",
+            "unit": "°C",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x",
+            "min": 0,
+            "max": 100,
+            "displayMax": 100,
+            "sim_initial": 30,
+            "sim_range": 0.5,
+            "sim_min": 25,
+            "sim_max": 38
+        },
+        {
+            "displayName": "COD",
+            "jsonKey": "ai5",
+            "unit": "mg/L",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x",
+            "min": 0,
+            "max": 120,
+            "displayMax": 120,
+            "sim_initial": 45.9,
+            "sim_range": 2,
+            "sim_min": 20,
+            "sim_max": 110
+        },
+        {
+            "displayName": "BOD",
+            "jsonKey": "ai6",
+            "unit": "mg/L",
+            "type": "value",
+            "mode": "simulated",
+            "formula": "x",
+            "min": 0,
+            "max": 20,
+            "displayMax": 20,
+            "sim_initial": 5.9,
+            "sim_range": 0.5,
+            "sim_min": 2,
+            "sim_max": 19
+        }
+    ]
+}
