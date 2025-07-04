@@ -1,5 +1,5 @@
 {
-    "pinHash": "",
+    "pinHash": "$2y$10$i46QSH6khz590l9Ya0kTSOef5lisFMFuqostaj0LmCG7e.xjCMHua",
     "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
     "interval": 30,
     "retentionHours": 48,
@@ -14,18 +14,18 @@
     "showMainBg": true,
     "logo": {
         "type": "url",
-        "value": ""
+        "value": "uploads/media_686780d04fdec6.15346483.png"
     },
     "headerBackground": {
         "type": "url",
-        "value": ""
+        "value": "uploads/media_686780d4ac1e10.51826165.png"
     },
     "mainBackground": {
         "type": "url",
-        "value": ""
+        "value": "uploads/media_686780d838cf97.73750005.png"
     },
     "contentRotation": {
-        "enabled": false,
+        "enabled": true,
         "sequence": [
             {
                 "type": "graph",
@@ -34,26 +34,26 @@
             },
             {
                 "type": "video",
-                "enabled": false,
+                "enabled": true,
                 "duration": 15,
                 "source": {
                     "type": "url",
-                    "value": ""
+                    "value": "uploads/media_6867816fb64bf1.89539066.mp4"
                 }
             },
             {
                 "type": "image",
-                "enabled": false,
+                "enabled": true,
                 "duration": 5,
                 "source": {
                     "type": "url",
-                    "value": ""
+                    "value": "uploads/media_6867816754b606.08194830.png"
                 }
             }
         ]
     },
     "barChartStyling": {
-        "barColor": "#f6995a",
+        "barColor": "#c56ce5",
         "rangeTextColor": "#ffffff",
         "labelTextColor": "#ffffff",
         "valueTextColor": "#ffffff",
@@ -89,7 +89,7 @@
             "unit": "mg/L",
             "type": "value",
             "mode": "simulated",
-            "formula": "x",
+            "formula": "x*5",
             "min": 0,
             "max": 50,
             "displayMax": 50,

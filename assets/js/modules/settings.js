@@ -124,14 +124,12 @@ export const settings = {
 
         containerEl.innerHTML = `
             <div class="image-picker-container border p-4 rounded-lg bg-gray-50 space-y-3">
-                <!-- Preview Area -->
                 <div class="preview-container hidden w-full h-48 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
                     <img class="preview-image max-w-full max-h-full object-contain" src="">
                     <video class="preview-video max-w-full max-h-full" controls src=""></video>
                     <span class="preview-message text-gray-500"></span>
                 </div>
 
-                <!-- Input & Progress Area -->
                 <div class="input-area">
                      <label class="block text-sm font-medium mb-1">Upload File</label>
                      <input type="file" class="image-picker-input-file block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" accept="${acceptType}">
@@ -145,17 +143,14 @@ export const settings = {
                     <span class="progress-text text-xs text-gray-600"></span>
                 </div>
                 
-                <!-- URL input as an alternative -->
                 <div>
                      <label class="block text-sm font-medium mb-1">Or enter URL</label>
                      <input type="url" class="settings-input image-picker-input-url w-full" placeholder="https://example.com/media.png">
                 </div>
 
-                <!-- Hidden input to store the final URL -->
                 <input type="hidden" class="final-media-url" data-type="url" value="">
 
-                 <!-- Error Message Area -->
-                <p class="error-message text-xs text-red-600 h-4"></p>
+                 <p class="error-message text-xs text-red-600 h-4"></p>
             </div>
         `;
         
@@ -448,25 +443,38 @@ export const settings = {
 
     async save() {
         this.elements.feedback.textContent = 'Saving to server...';
-        const newConfig = await this.getCurrentUIConfig();
-
+        
         try {
-            const response = await fetch('api/settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newConfig) });
+            const newConfig = await this.getCurrentUIConfig();
+            
+            const response = await fetch('api/settings.php', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(newConfig) 
+            });
+
             const result = await response.json();
+
             if (!result.success) {
+                // The 'error' key is what our PHP script sends on failure
                 throw new Error(result.error || 'Failed to save settings.');
             }
+
+            // On success, update the local state and provide feedback
             state.setConfig(newConfig);
             this.elements.feedback.textContent = 'Settings saved to server!';
             state.setSettingsChanged(false);
+            
             setTimeout(() => { this.elements.feedback.textContent = ''; }, 4000);
             
+            // Re-initialize the dashboard with the new settings
             if (this._initializeDashboardCallback) {
                 await this._initializeDashboardCallback(true);
             }
 
         } catch (error) {
             console.error("Save Error:", error);
+            // Display the specific error message from the `throw new Error(...)` line
             this.elements.feedback.textContent = `Error: ${error.message}`;
         }
     },
