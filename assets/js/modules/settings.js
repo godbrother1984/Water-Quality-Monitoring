@@ -1,8 +1,10 @@
 import { state } from './state.js';
-import { superParse } from './helpers.js';
+import { superParse, getYoutubeVideoId } from './helpers.js'; // Import getYoutubeVideoId
 import { pinManager } from './pinManager.js';
-import { settingsUI } from './settingsUI.js';
-import { mediaPicker } from './mediaPicker.js';
+
+// --- Constants ---
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export const settings = {
     elements: {
@@ -56,10 +58,301 @@ export const settings = {
     },
     _initializeDashboardCallback: null,
 
+    updateStorageEstimate() {
+        this.elements.storageEstimate.textContent = `Graph history is stored on the server.`;
+        this.elements.storageEstimate.style.color = '';
+    },
+    
+    createParameterRow(config = {}, addToTop = false) {
+        const content = this.elements.paramRowTemplate.content.cloneNode(true);
+        const row = content.querySelector('.parameter-row');
+        const displayNameInput = row.querySelector('.param-displayName');
+        const jsonKeyInput = row.querySelector('.param-jsonKey');
+        const unitInput = row.querySelector('.param-unit');
+        const rangeTextInput = row.querySelector('.param-rangeText');
+        const minInput = row.querySelector('.param-min');
+        const maxInput = row.querySelector('.param-max');
+        const displayMaxInput = row.querySelector('.param-displayMax');
+        const typeInput = row.querySelector('.param-type');
+        const modeInput = row.querySelector('.param-mode');
+        const formulaInput = row.querySelector('.param-formula');
+        const simSettingsDiv = row.querySelector('.sim-settings');
+        const simInitialInput = row.querySelector('.param-sim-initial');
+        const simRangeInput = row.querySelector('.param-sim-range');
+        const simMinInput = row.querySelector('.param-sim-min');
+        const simMaxInput = row.querySelector('.param-sim-max');
+        displayNameInput.value = config.displayName || '';
+        jsonKeyInput.value = config.jsonKey || '';
+        unitInput.value = config.unit || '';
+        minInput.value = config.min ?? 0;
+        maxInput.value = config.max || 100;
+        displayMaxInput.value = config.displayMax ?? config.max ?? 100;
+        typeInput.value = config.type || "value";
+        modeInput.value = config.mode || "real";
+        formulaInput.value = config.formula || "x";
+        simInitialInput.value = config.sim_initial ?? 50;
+        simRangeInput.value = config.sim_range ?? 2;
+        simMinInput.value = config.sim_min ?? 0;
+        simMaxInput.value = config.sim_max ?? 100;
+        const updateRangeText = () => {
+            const min = minInput.value;
+            const max = maxInput.value;
+            const unit = unitInput.value.trim();
+            rangeTextInput.value = `${min}-${max} ${unit}`.trim();
+        };
+        minInput.addEventListener("input", updateRangeText);
+        maxInput.addEventListener("input", updateRangeText);
+        unitInput.addEventListener("input", updateRangeText);
+        simSettingsDiv.classList.toggle("hidden", "simulated" !== (config.mode || "real"));
+        modeInput.addEventListener("change", (e) => simSettingsDiv.classList.toggle("hidden", "simulated" !== e.target.value));
+        row.querySelector(".remove-param-btn").addEventListener("click", () => {
+            row.remove();
+            state.setSettingsChanged(true);
+            this.updateStorageEstimate();
+        });
+        if (addToTop) {
+            this.elements.parameterList.prepend(row);
+        } else {
+            this.elements.parameterList.appendChild(row);
+        }
+        updateRangeText();
+    },
+
+    createImagePicker(containerEl, configKey, mediaType = 'image') {
+        const id_suffix = `${configKey}-${Math.random().toString(36).substring(2, 9)}`;
+        const acceptType = mediaType === 'video' ? 'video/*' : 'image/*,video/*';
+
+        containerEl.innerHTML = `
+            <div class="image-picker-container border p-4 rounded-lg bg-gray-50 space-y-3">
+                <!-- Preview Area -->
+                <div class="preview-container hidden w-full h-48 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
+                    <img class="preview-image max-w-full max-h-full object-contain" src="">
+                    <video class="preview-video max-w-full max-h-full" controls src=""></video>
+                    <span class="preview-message text-gray-500"></span>
+                </div>
+
+                <!-- Input & Progress Area -->
+                <div class="input-area">
+                     <label class="block text-sm font-medium mb-1">Upload File</label>
+                     <input type="file" class="image-picker-input-file block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" accept="${acceptType}">
+                     <p class="text-xs text-gray-500 mt-1">ขนาดสูงสุด: ${MAX_FILE_SIZE_MB}MB</p>
+                </div>
+                
+                <div class="progress-container hidden mt-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="progress-bar bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <span class="progress-text text-xs text-gray-600"></span>
+                </div>
+                
+                <!-- URL input as an alternative -->
+                <div>
+                     <label class="block text-sm font-medium mb-1">Or enter URL</label>
+                     <input type="url" class="settings-input image-picker-input-url w-full" placeholder="https://example.com/media.png">
+                </div>
+
+                <!-- Hidden input to store the final URL -->
+                <input type="hidden" class="final-media-url" data-type="url" value="">
+
+                 <!-- Error Message Area -->
+                <p class="error-message text-xs text-red-600 h-4"></p>
+            </div>
+        `;
+        
+        const fileInput = containerEl.querySelector('.image-picker-input-file');
+        const urlInput = containerEl.querySelector('.image-picker-input-url');
+        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+
+        // Handle URL input changes
+        urlInput.addEventListener('input', () => {
+            hiddenUrlInput.value = urlInput.value;
+            hiddenUrlInput.dataset.type = 'url';
+            this.updatePreview(containerEl);
+            state.setSettingsChanged(true);
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // --- Client-side validation ---
+            const errorMessageEl = containerEl.querySelector('.error-message');
+            errorMessageEl.textContent = '';
+            if (file.size > MAX_FILE_SIZE_BYTES) {
+                errorMessageEl.textContent = `ไฟล์มีขนาดใหญ่เกิน ${MAX_FILE_SIZE_MB}MB`;
+                fileInput.value = ''; // Reset input
+                return;
+            }
+
+            this.updatePreview(containerEl, file);
+            this.uploadFile(containerEl, file);
+            state.setSettingsChanged(true);
+        });
+    },
+
+    updatePreview(containerEl, file = null) {
+        const previewContainer = containerEl.querySelector('.preview-container');
+        const imgEl = containerEl.querySelector('.preview-image');
+        const videoEl = containerEl.querySelector('.preview-video');
+        const msgEl = containerEl.querySelector('.preview-message');
+        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+        const urlInput = containerEl.querySelector('.image-picker-input-url');
+        
+        // Reset all preview elements
+        imgEl.style.display = 'none';
+        videoEl.style.display = 'none';
+        videoEl.src = ''; // Stop any playing video
+        imgEl.src = '';
+        msgEl.textContent = '';
+        previewContainer.classList.add('hidden');
+
+        // Determine the source URL
+        let source = file ? URL.createObjectURL(file) : urlInput.value || hiddenUrlInput.value;
+        if (!source) return;
+
+        previewContainer.classList.remove('hidden');
+
+        const youtubeId = getYoutubeVideoId(source);
+
+        if (youtubeId) {
+            // It's a YouTube link, show the thumbnail
+            imgEl.style.display = 'block';
+            imgEl.src = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+            videoEl.style.display = 'none';
+        } else if (file ? file.type.startsWith('video/') : /\.(mp4|webm|ogg)$/i.test(source)) {
+            // It's a direct video link (uploaded or URL)
+            videoEl.style.display = 'block';
+            videoEl.src = source;
+            imgEl.style.display = 'none';
+        } else {
+            // Assume it's an image
+            imgEl.style.display = 'block';
+            imgEl.src = source;
+            videoEl.style.display = 'none';
+        }
+    },
+
+    uploadFile(containerEl, file) {
+        const progressContainer = containerEl.querySelector('.progress-container');
+        const progressBar = containerEl.querySelector('.progress-bar');
+        const progressText = containerEl.querySelector('.progress-text');
+        const errorMessageEl = containerEl.querySelector('.error-message');
+        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+
+        progressContainer.classList.remove('hidden');
+        errorMessageEl.textContent = '';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+                progressText.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+            }
+        });
+        
+        xhr.addEventListener('load', () => {
+            progressText.textContent = 'Processing...';
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        progressText.textContent = 'Upload complete!';
+                        hiddenUrlInput.value = response.url; // Store the server URL
+                        hiddenUrlInput.dataset.type = 'uploaded'; // Mark as uploaded
+                    } else {
+                        throw new Error(response.error || 'Unknown server error.');
+                    }
+                } catch (err) {
+                     errorMessageEl.textContent = 'Error parsing server response.';
+                     progressContainer.classList.add('hidden');
+                }
+            } else {
+                errorMessageEl.textContent = `Upload failed: ${xhr.statusText}`;
+                progressContainer.classList.add('hidden');
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            errorMessageEl.textContent = 'Network error during upload.';
+            progressContainer.classList.add('hidden');
+        });
+        
+        xhr.open('POST', 'api/upload_handler.php', true);
+        xhr.send(formData);
+    },
+
+    async getImagePickerValue(containerEl) {
+        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+        if (!hiddenUrlInput) return { type: 'url', value: '' };
+        return { type: 'url', value: hiddenUrlInput.value };
+    },
+
+    setImagePickerValue(containerEl, config) {
+        if (!config || !containerEl) return;
+        
+        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+        const urlInput = containerEl.querySelector('.image-picker-input-url');
+
+        if (hiddenUrlInput && urlInput) {
+            const value = config.value || '';
+            hiddenUrlInput.value = value;
+            urlInput.value = value;
+            hiddenUrlInput.dataset.type = config.type || 'url';
+            this.updatePreview(containerEl);
+        }
+    },
+    
+    updateParameterLiveValues(rawValues, calculatedValues) {
+        this.elements.parameterList.querySelectorAll('.parameter-row').forEach(row => {
+            const jsonKey = row.querySelector('.param-jsonKey').value;
+            const rawValueInput = row.querySelector('.param-rawValue');
+            const calculatedValueInput = row.querySelector('.param-calculatedValue');
+            if (rawValues.hasOwnProperty(jsonKey)) {
+                const raw = rawValues[jsonKey];
+                rawValueInput.value = typeof raw === 'number' ? raw.toFixed(2) : raw;
+            }
+            if (calculatedValues.hasOwnProperty(jsonKey)) {
+                const calc = calculatedValues[jsonKey];
+                calculatedValueInput.value = typeof calc === 'number' ? calc.toFixed(2) : calc;
+            }
+        });
+    },
+
+    createRotationRow(itemConfig) {
+        const row = document.createElement('div');
+        row.className = 'rotation-row p-4 border rounded-lg bg-white shadow-sm relative space-y-4';
+        row.setAttribute('draggable', 'true');
+        row.dataset.type = itemConfig.type;
+        let sourcePickerHTML = '';
+        if (itemConfig.type !== 'graph') {
+            sourcePickerHTML = `<div class="image-picker-container mt-4"></div>`;
+        }
+        let tooltipHTML = '';
+        if (itemConfig.type === 'video') {
+            tooltipHTML = `<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content"><b>Supported Sources:</b><br>- Direct video URL (MP4, WebM, Ogg)<br>- YouTube Link (e.g., watch?v=... or youtu.be/...)<br>- Uploaded video file</span></span>`;
+        } else if (itemConfig.type === 'image') {
+            tooltipHTML = `<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content"><b>Supported Sources:</b><br>- Direct image URL (JPG, PNG, GIF, SVG)<br>- Uploaded image file</span></span>`;
+        }
+        row.innerHTML = ` <div class="flex items-center justify-between"> <div class="flex items-center"> <div class="drag-handle" title="Drag to reorder"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"> <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-4 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-4 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/> </svg> </div> <input type="checkbox" class="rotation-enabled h-4 w-4 rounded" ${itemConfig.enabled ? 'checked' : ''}> <label class="ml-3 font-semibold text-gray-700 capitalize">${itemConfig.type}</label> ${tooltipHTML} </div> <div class="flex items-center gap-2"> <label class="text-sm">Duration (s):</label> <input type="number" class="rotation-duration settings-input w-20" value="${itemConfig.duration}"> <button class="remove-rotation-btn text-red-500 hover:text-red-700 p-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg> </button> </div> </div> ${sourcePickerHTML} `;
+        this.elements.rotationList.appendChild(row);
+        row.querySelector('.remove-rotation-btn').addEventListener('click', () => row.remove());
+        const pickerContainer = row.querySelector('.image-picker-container');
+        if (pickerContainer) {
+            const pickerType = itemConfig.type;
+            this.createImagePicker(pickerContainer, `${pickerType}-rotation`, pickerType);
+            this.setImagePickerValue(pickerContainer, itemConfig.source);
+        }
+    },
+    
     async getCurrentUIConfig() {
         const currentConfig = state.getConfig();
         const newConfig = { pinHash: currentConfig.pinHash };
-
         newConfig.apiUrl = this.elements.apiUrlInput.value.trim();
         newConfig.interval = parseInt(this.elements.intervalInput.value, 10) || 30;
         newConfig.retentionHours = parseInt(this.elements.retentionInput.value, 10) || 48;
@@ -72,11 +365,9 @@ export const settings = {
         newConfig.showLogo = this.elements.showLogoCheckbox.checked;
         newConfig.showHeaderBg = this.elements.showHeaderBgCheckbox.checked;
         newConfig.showMainBg = this.elements.showMainBgCheckbox.checked;
-
-        newConfig.logo = await mediaPicker.getImagePickerValue(this.elements.logoPickerContainer);
-        newConfig.headerBackground = await mediaPicker.getImagePickerValue(this.elements.headerBgPickerContainer);
-        newConfig.mainBackground = await mediaPicker.getImagePickerValue(this.elements.mainBgPickerContainer);
-
+        newConfig.logo = await this.getImagePickerValue(this.elements.logoPickerContainer);
+        newConfig.headerBackground = await this.getImagePickerValue(this.elements.headerBgPickerContainer);
+        newConfig.mainBackground = await this.getImagePickerValue(this.elements.mainBgPickerContainer);
         newConfig.contentRotation = { enabled: this.elements.rotationEnabledCheckbox.checked, sequence: [] };
         const rotationItems = Array.from(this.elements.rotationList.querySelectorAll('.rotation-row'));
         const sequencePromises = rotationItems.map(async (row) => {
@@ -88,59 +379,17 @@ export const settings = {
             };
             if (type !== 'graph') {
                 const pickerContainer = row.querySelector('.image-picker-container');
-                itemConfig.source = await mediaPicker.getImagePickerValue(pickerContainer);
+                itemConfig.source = await this.getImagePickerValue(pickerContainer);
             }
             return itemConfig;
         });
         newConfig.contentRotation.sequence = await Promise.all(sequencePromises);
-
-        newConfig.barChartStyling = { 
-            barColor: this.elements.barColorInput.value, 
-            rangeTextColor: this.elements.barRangeTextColorInput.value, 
-            labelTextColor: this.elements.barLabelTextColorInput.value, 
-            valueTextColor: this.elements.barValueTextColorInput.value, 
-            unitTextColor: this.elements.barUnitTextColorInput.value, 
-            rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), 
-            labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), 
-            valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), 
-            unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10) 
-        };
-        
+        newConfig.barChartStyling = { barColor: this.elements.barColorInput.value, rangeTextColor: this.elements.barRangeTextColorInput.value, labelTextColor: this.elements.barLabelTextColorInput.value, valueTextColor: this.elements.barValueTextColorInput.value, unitTextColor: this.elements.barUnitTextColorInput.value, rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10) };
         newConfig.modeStatusKey = this.elements.modeKeyInput.value.trim();
         newConfig.operationModes = [];
-        this.elements.modeValuesContainer.querySelectorAll('.mode-value-row').forEach(row => { 
-            const name = row.querySelector('label').textContent; 
-            const value = row.querySelector('input').value.trim(); 
-            newConfig.operationModes.push({ name, value }); 
-        });
-
+        this.elements.modeValuesContainer.querySelectorAll('.mode-value-row').forEach(row => { const name = row.querySelector('label').textContent; const value = row.querySelector('input').value.trim(); newConfig.operationModes.push({ name, value }); });
         newConfig.params = [];
-        this.elements.parameterList.querySelectorAll('.parameter-row').forEach(row => {
-            const getFloatValue = (selector) => {
-                const el = row.querySelector(selector);
-                const val = el ? el.value : '';
-                return val !== '' ? parseFloat(val) : null;
-            };
-
-            newConfig.params.push({ 
-                displayName: row.querySelector('.param-displayName').value.trim(), 
-                jsonKey: row.querySelector('.param-jsonKey').value.trim(), 
-                unit: row.querySelector('.param-unit').value.trim(), 
-                icon: row.querySelector('.param-icon').value.trim(),
-                formula: row.querySelector('.param-formula').value.trim() || 'x', 
-                mode: row.querySelector('.param-mode').value,
-                
-                criticalLow: getFloatValue('.param-criticalLow'),
-                warningLow: getFloatValue('.param-warningLow'),
-                warningHigh: getFloatValue('.param-warningHigh'),
-                criticalHigh: getFloatValue('.param-criticalHigh'),
-                
-                sim_initial: getFloatValue('.param-sim-initial'), 
-                sim_range: getFloatValue('.param-sim-range'), 
-                sim_min: getFloatValue('.param-sim-min'), 
-                sim_max: getFloatValue('.param-sim-max') 
-            }); 
-        });
+        this.elements.parameterList.querySelectorAll('.parameter-row').forEach(row => { newConfig.params.push({ displayName: row.querySelector('.param-displayName').value.trim(), jsonKey: row.querySelector('.param-jsonKey').value.trim(), unit: row.querySelector('.param-unit').value.trim(), type: row.querySelector('.param-type').value, mode: row.querySelector('.param-mode').value, formula: row.querySelector('.param-formula').value.trim() || 'x', min: parseFloat(row.querySelector('.param-min').value) || 0, max: parseFloat(row.querySelector('.param-max').value) || 100, displayMax: parseFloat(row.querySelector('.param-displayMax').value) || null, sim_initial: parseFloat(row.querySelector('.param-sim-initial').value), sim_range: parseFloat(row.querySelector('.param-sim-range').value), sim_min: parseFloat(row.querySelector('.param-sim-min').value), sim_max: parseFloat(row.querySelector('.param-sim-max').value) }); });
         return newConfig;
     },
 
@@ -158,18 +407,15 @@ export const settings = {
         this.elements.showLogoCheckbox.checked = config.showLogo ?? true;
         this.elements.showHeaderBgCheckbox.checked = config.showHeaderBg ?? true;
         this.elements.showMainBgCheckbox.checked = config.showMainBg ?? true;
-        
-        mediaPicker.setImagePickerValue(this.elements.logoPickerContainer, config.logo);
-        mediaPicker.setImagePickerValue(this.elements.headerBgPickerContainer, config.headerBackground);
-        mediaPicker.setImagePickerValue(this.elements.mainBgPickerContainer, config.mainBackground);
-        
+        this.setImagePickerValue(this.elements.logoPickerContainer, config.logo);
+        this.setImagePickerValue(this.elements.headerBgPickerContainer, config.headerBackground);
+        this.setImagePickerValue(this.elements.mainBgPickerContainer, config.mainBackground);
         const rotationConfig = config.contentRotation;
         if (rotationConfig) {
             this.elements.rotationEnabledCheckbox.checked = rotationConfig.enabled;
             this.elements.rotationList.innerHTML = "";
-            rotationConfig.sequence.forEach((item) => settingsUI.createRotationRow(item));
+            rotationConfig.sequence.forEach((item) => this.createRotationRow(item));
         }
-        
         this.elements.modeKeyInput.value = config.modeStatusKey || "";
         this.elements.modeValuesContainer.innerHTML = "";
         if (config.operationModes) {
@@ -180,12 +426,10 @@ export const settings = {
                 this.elements.modeValuesContainer.appendChild(row);
             });
         }
-        
         if (config.params && Array.isArray(config.params)) {
             this.elements.parameterList.innerHTML = "";
-            config.params.forEach((p) => settingsUI.createParameterRow(p));
+            config.params.forEach((p) => this.createParameterRow(p));
         }
-
         const styling = config.barChartStyling;
         if (styling) {
             this.elements.barColorInput.value = styling.barColor || '#f6995a';
@@ -198,8 +442,7 @@ export const settings = {
             this.elements.barValueFontSizeInput.value = styling.valueFontSize || 18;
             this.elements.barUnitFontSizeInput.value = styling.unitFontSize || 18;
         }
-        
-        settingsUI.updateStorageEstimate();
+        this.updateStorageEstimate();
         state.setSettingsChanged(false);
     },
 
@@ -282,53 +525,82 @@ export const settings = {
             resultDisplay.textContent = `--- ERROR ---\n${err.message}`;
         }
     },
+    
+    initDragAndDrop(containerSelector, itemSelector) {
+        const container = document.querySelector(containerSelector);
+        if (!container) return;
+        let draggingElement = null;
+        
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll(`${itemSelector}:not(.dragging)`)];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
 
-    updateParameterLiveValues(rawValues, calculatedValues) {
-        settingsUI.updateParameterLiveValues(rawValues, calculatedValues);
+        container.addEventListener('dragstart', e => {
+            const target = e.target.closest(itemSelector);
+            if (target) {
+                draggingElement = target;
+                setTimeout(() => { draggingElement.classList.add('dragging'); }, 0);
+            }
+        });
+        container.addEventListener('dragend', () => {
+            if (draggingElement) {
+                draggingElement.classList.remove('dragging');
+                draggingElement = null;
+                state.setSettingsChanged(true);
+            }
+        });
+        container.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (!draggingElement) return;
+            const afterElement = getDragAfterElement(container, e.clientY);
+            if (afterElement == null) {
+                container.appendChild(draggingElement);
+            } else {
+                container.insertBefore(draggingElement, afterElement);
+            }
+        });
     },
 
     init(initializeDashboardCallback) {
         this._initializeDashboardCallback = initializeDashboardCallback;
 
-        settingsUI.init(this.elements);
-
-        mediaPicker.createImagePicker(this.elements.logoPickerContainer, "logo", "image");
-        mediaPicker.createImagePicker(this.elements.headerBgPickerContainer, "headerBg", "image");
-        mediaPicker.createImagePicker(this.elements.mainBgPickerContainer, "mainBg", "image");
+        // Create the pickers
+        this.createImagePicker(this.elements.logoPickerContainer, "logo", "image");
+        this.createImagePicker(this.elements.headerBgPickerContainer, "headerBg", "image");
+        this.createImagePicker(this.elements.mainBgPickerContainer, "mainBg", "image");
 
         const inputFieldClasses = "w-full bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 disabled:bg-gray-400 focus:ring-1 focus:border-indigo-500";
         document.querySelectorAll(".settings-input").forEach(el => {
             if (el.type !== "file" && el.type !== "color") el.className = inputFieldClasses
         });
-
-        settingsUI.initDragAndDrop("#settings-parameter-list", ".parameter-row");
-        settingsUI.initDragAndDrop("#settings-rotation-list", ".rotation-row");
-
-        const estimateListener = () => settingsUI.updateStorageEstimate();
+        this.initDragAndDrop("#settings-parameter-list", ".parameter-row");
+        this.initDragAndDrop("#settings-rotation-list", ".rotation-row");
+        const estimateListener = () => this.updateStorageEstimate();
         this.elements.retentionInput.addEventListener("input", estimateListener);
         this.elements.parameterList.addEventListener("DOMSubtreeModified", estimateListener);
-        
         this.elements.formContainer.addEventListener("input", (e) => { 
             if(e.target.type !== 'file') {
                 state.setSettingsChanged(true); 
             }
         });
-
-        this.elements.addParamBtn.addEventListener("click", () => { 
-            settingsUI.createParameterRow({}, true); 
-            state.setSettingsChanged(true); 
-            settingsUI.updateStorageEstimate(); 
-        });
-
+        this.elements.addParamBtn.addEventListener("click", () => { this.createParameterRow({}, true); state.setSettingsChanged(true); this.updateStorageEstimate(); });
         document.querySelectorAll(".add-slide-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 const type = btn.dataset.type;
                 const defaultConfig = { type: type, duration: 10, enabled: true };
                 if (type !== 'graph') defaultConfig.source = { type: 'url', value: '' };
-                settingsUI.createRotationRow(defaultConfig);
+                this.createRotationRow(defaultConfig);
             });
         });
-
         this.elements.saveBtn.addEventListener("click", () => this.save());
         this.elements.testConnectionBtn.addEventListener("click", () => this.testConnection());
         this.elements.refreshDataBtn.addEventListener("click", async () => {
@@ -356,7 +628,7 @@ export const settings = {
             }
         });
         
-        this.elements.changePinBtn.addEventListener("click", () => {
+        this.elements.changePinBtn.addEventListener('click', () => {
             pinManager.requestPinChange();
         });
     }
