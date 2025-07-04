@@ -197,11 +197,12 @@ async function fetchAndUpdateAll() {
             finalDataForDashboard[p.jsonKey] = dashboardValue;
         });
         
-        // Process operation mode
+        // Process operation mode with safety check
         const modeKey = configToUse.modeStatusKey;
+        const operationModes = configToUse.operationModes || [];
         const modeValue = (realData && realData.hasOwnProperty(modeKey))
             ? realData[modeKey]
-            : (configToUse.operationModes.find(m => m.name === 'MEASURING')?.value || '1');
+            : (operationModes.find(m => m.name === 'MEASURING')?.value || '1');
         finalDataForGraph[modeKey] = modeValue;
         finalDataForDashboard[modeKey] = modeValue;
         

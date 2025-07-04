@@ -1,5 +1,16 @@
 {
-    "pinHash": "$2y$10$i46QSH6khz590l9Ya0kTSOef5lisFMFuqostaj0LmCG7e.xjCMHua",
+    "logo": {
+        "type": "url",
+        "value": "uploads/media_6868211f6efc49.73782671.png"
+    },
+    "headerBackground": {
+        "type": "url",
+        "value": "uploads/media_68682225208fd8.78544548.png"
+    },
+    "mainBackground": {
+        "type": "url",
+        "value": "uploads/media_6868222521be55.37659766.png"
+    },
     "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
     "interval": 30,
     "retentionHours": 48,
@@ -12,20 +23,8 @@
     "showLogo": true,
     "showHeaderBg": true,
     "showMainBg": true,
-    "logo": {
-        "type": "url",
-        "value": "uploads/media_686780d04fdec6.15346483.png"
-    },
-    "headerBackground": {
-        "type": "url",
-        "value": "uploads/media_686780d4ac1e10.51826165.png"
-    },
-    "mainBackground": {
-        "type": "url",
-        "value": "uploads/media_686780d838cf97.73750005.png"
-    },
     "contentRotation": {
-        "enabled": true,
+        "enabled": false,
         "sequence": [
             {
                 "type": "graph",
@@ -38,7 +37,7 @@
                 "duration": 15,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_6867816fb64bf1.89539066.mp4"
+                    "value": "uploads/media_68683066af5651.04430214.mp4"
                 }
             },
             {
@@ -47,13 +46,13 @@
                 "duration": 5,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_6867816754b606.08194830.png"
+                    "value": "uploads/media_68683066ab9e04.97098542.png"
                 }
             }
         ]
     },
     "barChartStyling": {
-        "barColor": "#c56ce5",
+        "barColor": "#8b5cf6",
         "rangeTextColor": "#ffffff",
         "labelTextColor": "#ffffff",
         "valueTextColor": "#ffffff",
@@ -63,25 +62,8 @@
         "valueFontSize": 18,
         "unitFontSize": 18
     },
-    "modeStatusKey": "operation_mode",
-    "operationModes": [
-        {
-            "name": "MEASURING",
-            "value": "1"
-        },
-        {
-            "name": "CALIBRATION",
-            "value": "2"
-        },
-        {
-            "name": "DRAIN",
-            "value": "3"
-        },
-        {
-            "name": "NORMAL",
-            "value": "4"
-        }
-    ],
+    "modeStatusKey": "",
+    "operationModes": [],
     "params": [
         {
             "displayName": "Suspended Solids",
@@ -173,5 +155,6 @@
             "sim_min": 2,
             "sim_max": 19
         }
-    ]
+    ],
+    "pinHash": "$2y$10$X.c01N1E1tRhdGKP4GqrXufAjSWZCtBalbD0NyPCydIDyYa2PMsOG"
 }

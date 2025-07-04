@@ -55,8 +55,13 @@ if ($method === 'POST') {
         send_json_response(['success' => false, 'error' => 'Invalid JSON data received.'], 400);
     }
 
-    // Preserve the existing PIN
+    // Preserve the existing PIN Hash (critical for security)
     $currentSettings = get_settings($settings_file, $defaults_file);
+    if (isset($currentSettings['pinHash']) && !empty($currentSettings['pinHash'])) {
+        $newSettings['pinHash'] = $currentSettings['pinHash'];
+    }
+    
+    // Also preserve legacy PIN if exists (for backward compatibility)
     if (isset($currentSettings['pin']) && !empty($currentSettings['pin'])) {
         $newSettings['pin'] = $currentSettings['pin'];
     }
@@ -82,17 +87,45 @@ if ($method === 'GET') {
         if (!is_writable($settings_file) && (file_exists($settings_file) || !is_writable(dirname($settings_file)))) {
             send_json_response(['success' => false, 'error' => 'Cannot restore defaults. Check server permissions for the /data folder.'], 500);
         }
-        if (copy($defaults_file, $settings_file)) {
-             send_json_response(['success' => true, 'message' => 'Settings reset to defaults.']);
+        
+        // Read current settings to preserve PIN
+        $currentSettings = get_settings($settings_file, $defaults_file);
+        $savedPinHash = $currentSettings['pinHash'] ?? '';
+        $savedPin = $currentSettings['pin'] ?? '';
+        
+        // Copy defaults and restore PIN
+        $defaultsContent = file_get_contents($defaults_file);
+        $defaults = json_decode($defaultsContent, true);
+        
+        if ($savedPinHash) {
+            $defaults['pinHash'] = $savedPinHash;
+        }
+        if ($savedPin) {
+            $defaults['pin'] = $savedPin;
+        }
+        
+        $encoded_data = json_encode($defaults, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        
+        if (file_put_contents($settings_file, $encoded_data, LOCK_EX)) {
+             send_json_response(['success' => true, 'message' => 'Settings reset to defaults. PIN preserved.']);
         } else {
              send_json_response(['success' => false, 'error' => 'An error occurred while restoring defaults.'], 500);
         }
     } else {
         // Fetch current settings
         $settings = get_settings($settings_file, $defaults_file);
-        // For security, never send the PIN hash to the client-side.
-        unset($settings['pin']);
-        send_json_response($settings);
+        
+        // Create a copy for client-side that includes pinHash info but not the actual hash
+        $clientSettings = $settings;
+        
+        // Keep a boolean flag to indicate if PIN is set (for frontend logic)
+        $clientSettings['hasPinSet'] = isset($settings['pinHash']) && !empty($settings['pinHash']);
+        
+        // For security, never send the actual PIN hash or plaintext PIN to the client-side
+        unset($clientSettings['pin']);
+        unset($clientSettings['pinHash']);
+        
+        send_json_response($clientSettings);
     }
 }
 

@@ -197,65 +197,64 @@
                         </div>
                     </div>
                      <!-- Dashboard Appearance -->
-                    <div class="pt-6 border-t"><h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Dashboard Appearance<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">Customize the visual elements of the dashboard header and backgrounds. You can toggle the visibility of each image.</span></span></h3>
-                        <div class="space-y-6">
-                            <!-- Header Text -->
-                            <div>
-                                <label for="settings-header-caption" class="block text-sm font-medium mb-2">Header Caption</label>
-                                <input type="text" id="settings-header-caption" class="settings-input">
-                            </div>
-                            <div>
-                                <label for="settings-header-caption-fontsize" class="block text-sm font-medium mb-2">Header Caption Font Size (px)</label>
-                                <input type="number" id="settings-header-caption-fontsize" class="settings-input">
-                            </div>
-                            <div>
-                                <label for="settings-header-subcaption" class="block text-sm font-medium mb-2">Header Sub-caption</label>
-                                <input type="text" id="settings-header-subcaption" class="settings-input">
-                            </div>
-                             <div>
-                                <label for="settings-header-subcaption-fontsize" class="block text-sm font-medium mb-2">Header Sub-caption Font Size (px)</label>
-                                <input type="number" id="settings-header-subcaption-fontsize" class="settings-input">
-                            </div>
+                    <div class="pt-6 border-t">
+    <h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Dashboard Appearance
+        <span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">Customize the visual elements of the dashboard header and backgrounds. You can toggle the visibility of each image.</span></span>
+    </h3>
+    <div class="space-y-6">
+        <div>
+            <label for="settings-header-caption" class="block text-sm font-medium mb-2">Header Caption</label>
+            <input type="text" id="settings-header-caption" class="settings-input">
+        </div>
+        <div>
+            <label for="settings-header-caption-fontsize" class="block text-sm font-medium mb-2">Header Caption Font Size (px)</label>
+            <input type="number" id="settings-header-caption-fontsize" class="settings-input">
+        </div>
+        <div>
+            <label for="settings-header-subcaption" class="block text-sm font-medium mb-2">Header Sub-caption</label>
+            <input type="text" id="settings-header-subcaption" class="settings-input">
+        </div>
+        <div>
+            <label for="settings-header-subcaption-fontsize" class="block text-sm font-medium mb-2">Header Sub-caption Font Size (px)</label>
+            <input type="number" id="settings-header-subcaption-fontsize" class="settings-input">
+        </div>
 
-                            <div class="pt-4 border-t"></div>
+        <div class="pt-4 border-t"></div>
 
-                             <!-- Logo Settings -->
-                            <div class="flex items-center">
-                                <input id="settings-show-logo" type="checkbox" class="h-4 w-4 rounded">
-                                <label for="settings-show-logo" class="ml-2 block text-sm font-medium">Show Logo</label>
-                            </div>
-                            <div id="logo-picker-container"></div>
-                            <p class="text-xs text-gray-500 mt-1">แนะนำ: 200x200px (ภาพจะถูกปรับขนาดให้พอดี)</p>
+        <div class="flex items-center">
+            <input id="settings-show-logo" type="checkbox" class="h-4 w-4 rounded">
+            <label for="settings-show-logo" class="ml-2 block text-sm font-medium">Show Logo</label>
+        </div>
+        <div id="logo-picker-container"></div>
+        <p class="text-xs text-gray-500 mt-1">แนะนำ: 200x200px (ภาพจะถูกปรับขนาดให้พอดี)</p>
 
-                            <div class="pt-4 border-t"></div>
+        <div class="pt-4 border-t"></div>
 
-                            <!-- Header Background Settings -->
-                            <div class="flex items-center">
-                                <input id="settings-show-header-bg" type="checkbox" class="h-4 w-4 rounded">
-                                <label for="settings-show-header-bg" class="ml-2 block text-sm font-medium">Show Header Background Image</label>
-                            </div>
-                            <div id="header-bg-picker-container"></div>
-                            <p class="text-xs text-gray-500 mt-1">แนะนำ: 1920x200px (แนวนอนกว้าง)</p>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Header Background Color (Fallback)</label>
-                                <input type="color" id="settings-header-bg-color">
-                            </div>
+        <div class="flex items-center">
+            <input id="settings-show-header-bg" type="checkbox" class="h-4 w-4 rounded">
+            <label for="settings-show-header-bg" class="ml-2 block text-sm font-medium">Show Header Background Image</label>
+        </div>
+        <div id="header-bg-picker-container"></div>
+        <p class="text-xs text-gray-500 mt-1">แนะนำ: 1920x200px (แนวนอนกว้าง)</p>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Header Background Color (Fallback)</label>
+            <input type="color" id="settings-header-bg-color">
+        </div>
 
-                            <div class="pt-4 border-t"></div>
+        <div class="pt-4 border-t"></div>
 
-                            <!-- Main Background Settings -->
-                             <div class="flex items-center">
-                                <input id="settings-show-main-bg" type="checkbox" class="h-4 w-4 rounded">
-                                <label for="settings-show-main-bg" class="ml-2 block text-sm font-medium">Show Main Background Image</label>
-                            </div>
-                            <div id="main-bg-picker-container"></div>
-                            <p class="text-xs text-gray-500 mt-1">แนะนำ: 1920x1080px (สัดส่วน 16:9)</p>
-                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Main Background Color (Fallback)</label>
-                                <input type="color" id="settings-main-bg-color">
-                            </div>
-                        </div>
-                    </div>
+        <div class="flex items-center">
+            <input id="settings-show-main-bg" type="checkbox" class="h-4 w-4 rounded">
+            <label for="settings-show-main-bg" class="ml-2 block text-sm font-medium">Show Main Background Image</label>
+        </div>
+        <div id="main-bg-picker-container"></div>
+        <p class="text-xs text-gray-500 mt-1">แนะนำ: 1920x1080px (สัดส่วน 16:9)</p>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Main Background Color (Fallback)</label>
+            <input type="color" id="settings-main-bg-color">
+        </div>
+    </div>
+</div>
                      <!-- Dashboard Content Rotation -->
                     <div class="pt-6 border-t"><h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Dashboard Content Rotation<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">Automatically rotate between graph, video, and image on the dashboard.<br>- Enable/disable the rotation.<br>- Drag to reorder.<br>- Set duration for each view.<br>- Set sources for video and image.</span></span></h3>
                         <div class="space-y-4">

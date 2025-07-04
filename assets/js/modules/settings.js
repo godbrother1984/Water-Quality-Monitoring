@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { superParse, getYoutubeVideoId } from './helpers.js'; // Import getYoutubeVideoId
+import { superParse, getYoutubeVideoId } from './helpers.js';
 import { pinManager } from './pinManager.js';
 
 // --- Constants ---
@@ -129,27 +129,22 @@ export const settings = {
                     <video class="preview-video max-w-full max-h-full" controls src=""></video>
                     <span class="preview-message text-gray-500"></span>
                 </div>
-
                 <div class="input-area">
                      <label class="block text-sm font-medium mb-1">Upload File</label>
                      <input type="file" class="image-picker-input-file block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" accept="${acceptType}">
                      <p class="text-xs text-gray-500 mt-1">ขนาดสูงสุด: ${MAX_FILE_SIZE_MB}MB</p>
                 </div>
-                
                 <div class="progress-container hidden mt-2">
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="progress-bar bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
                     </div>
                     <span class="progress-text text-xs text-gray-600"></span>
                 </div>
-                
                 <div>
                      <label class="block text-sm font-medium mb-1">Or enter URL</label>
                      <input type="url" class="settings-input image-picker-input-url w-full" placeholder="https://example.com/media.png">
                 </div>
-
                 <input type="hidden" class="final-media-url" data-type="url" value="">
-
                  <p class="error-message text-xs text-red-600 h-4"></p>
             </div>
         `;
@@ -158,7 +153,6 @@ export const settings = {
         const urlInput = containerEl.querySelector('.image-picker-input-url');
         const hiddenUrlInput = containerEl.querySelector('.final-media-url');
 
-        // Handle URL input changes
         urlInput.addEventListener('input', () => {
             hiddenUrlInput.value = urlInput.value;
             hiddenUrlInput.dataset.type = 'url';
@@ -166,20 +160,16 @@ export const settings = {
             state.setSettingsChanged(true);
         });
 
-        // Handle file selection
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
-            // --- Client-side validation ---
             const errorMessageEl = containerEl.querySelector('.error-message');
             errorMessageEl.textContent = '';
             if (file.size > MAX_FILE_SIZE_BYTES) {
                 errorMessageEl.textContent = `ไฟล์มีขนาดใหญ่เกิน ${MAX_FILE_SIZE_MB}MB`;
-                fileInput.value = ''; // Reset input
+                fileInput.value = '';
                 return;
             }
-
             this.updatePreview(containerEl, file);
             this.uploadFile(containerEl, file);
             state.setSettingsChanged(true);
@@ -194,34 +184,28 @@ export const settings = {
         const hiddenUrlInput = containerEl.querySelector('.final-media-url');
         const urlInput = containerEl.querySelector('.image-picker-input-url');
         
-        // Reset all preview elements
         imgEl.style.display = 'none';
         videoEl.style.display = 'none';
-        videoEl.src = ''; // Stop any playing video
+        videoEl.src = '';
         imgEl.src = '';
         msgEl.textContent = '';
         previewContainer.classList.add('hidden');
 
-        // Determine the source URL
         let source = file ? URL.createObjectURL(file) : urlInput.value || hiddenUrlInput.value;
         if (!source) return;
 
         previewContainer.classList.remove('hidden');
-
         const youtubeId = getYoutubeVideoId(source);
 
         if (youtubeId) {
-            // It's a YouTube link, show the thumbnail
             imgEl.style.display = 'block';
-            imgEl.src = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+            imgEl.src = `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`;
             videoEl.style.display = 'none';
         } else if (file ? file.type.startsWith('video/') : /\.(mp4|webm|ogg)$/i.test(source)) {
-            // It's a direct video link (uploaded or URL)
             videoEl.style.display = 'block';
             videoEl.src = source;
             imgEl.style.display = 'none';
         } else {
-            // Assume it's an image
             imgEl.style.display = 'block';
             imgEl.src = source;
             videoEl.style.display = 'none';
@@ -234,15 +218,11 @@ export const settings = {
         const progressText = containerEl.querySelector('.progress-text');
         const errorMessageEl = containerEl.querySelector('.error-message');
         const hiddenUrlInput = containerEl.querySelector('.final-media-url');
-
         progressContainer.classList.remove('hidden');
         errorMessageEl.textContent = '';
-        
         const formData = new FormData();
         formData.append('file', file);
-        
         const xhr = new XMLHttpRequest();
-        
         xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
                 const percentComplete = (e.loaded / e.total) * 100;
@@ -250,7 +230,6 @@ export const settings = {
                 progressText.textContent = `Uploading... ${Math.round(percentComplete)}%`;
             }
         });
-        
         xhr.addEventListener('load', () => {
             progressText.textContent = 'Processing...';
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -258,8 +237,8 @@ export const settings = {
                     const response = JSON.parse(xhr.responseText);
                     if (response.success) {
                         progressText.textContent = 'Upload complete!';
-                        hiddenUrlInput.value = response.url; // Store the server URL
-                        hiddenUrlInput.dataset.type = 'uploaded'; // Mark as uploaded
+                        hiddenUrlInput.value = response.url;
+                        hiddenUrlInput.dataset.type = 'uploaded';
                     } else {
                         throw new Error(response.error || 'Unknown server error.');
                     }
@@ -272,25 +251,61 @@ export const settings = {
                 progressContainer.classList.add('hidden');
             }
         });
-
         xhr.addEventListener('error', () => {
             errorMessageEl.textContent = 'Network error during upload.';
             progressContainer.classList.add('hidden');
         });
-        
         xhr.open('POST', 'api/upload_handler.php', true);
         xhr.send(formData);
     },
 
-    async getImagePickerValue(containerEl) {
-        const hiddenUrlInput = containerEl.querySelector('.final-media-url');
-        if (!hiddenUrlInput) return { type: 'url', value: '' };
-        return { type: 'url', value: hiddenUrlInput.value };
+    // THIS IS THE ORIGINAL, PROBLEMATIC FUNCTION. WE WILL NOT USE IT.
+    // async getImagePickerValue(containerEl) {
+    //     const hiddenUrlInput = containerEl.querySelector('.final-media-url');
+    //     if (!hiddenUrlInput) return { type: 'url', value: '' };
+    //     return { type: 'url', value: hiddenUrlInput.value };
+    // },
+    
+    // THIS IS THE REPLACEMENT FUNCTION THAT WILL BE USED INSTEAD.
+    /**
+     * Gets the final URL from an image picker for saving. This is the core of the fix.
+     * @param {HTMLElement} container - The picker's container element.
+     * @returns {Promise<{type: string, value: string}>} A promise that resolves with the object to be saved.
+     */
+    async getFinalImagePickerValue(container) {
+        const fileInput = container.querySelector('.image-picker-input-file');
+        const urlInput = container.querySelector('.image-picker-input-url');
+        const hiddenUrlInput = container.querySelector('.final-media-url');
+        
+        // If a new file was selected, upload it first.
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch('api/upload_handler.php', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success && result.url) {
+                    return { type: 'url', value: result.url }; // On success, return the new URL.
+                } else {
+                    console.error('File upload failed on server:', result.error);
+                    // Fallback: If upload fails, try to return the URL from the text input to avoid data loss.
+                    return { type: 'url', value: urlInput.value };
+                }
+            } catch (error) {
+                console.error('Upload request failed:', error);
+                return { type: 'url', value: urlInput.value }; // Fallback on network error.
+            }
+        }
+        
+        // If no new file, simply return the value from the URL text input.
+        // The hidden input should be kept in sync with this by the 'input' event listener.
+        return { type: 'url', value: urlInput.value };
     },
+
 
     setImagePickerValue(containerEl, config) {
         if (!config || !containerEl) return;
-        
         const hiddenUrlInput = containerEl.querySelector('.final-media-url');
         const urlInput = containerEl.querySelector('.image-picker-input-url');
 
@@ -347,23 +362,34 @@ export const settings = {
     
     async getCurrentUIConfig() {
         const currentConfig = state.getConfig();
-        const newConfig = { pinHash: currentConfig.pinHash };
-        newConfig.apiUrl = this.elements.apiUrlInput.value.trim();
-        newConfig.interval = parseInt(this.elements.intervalInput.value, 10) || 30;
-        newConfig.retentionHours = parseInt(this.elements.retentionInput.value, 10) || 48;
-        newConfig.headerCaption = this.elements.headerCaptionInput.value.trim();
-        newConfig.headerSubCaption = this.elements.headerSubCaptionInput.value.trim();
-        newConfig.headerCaptionFontSize = parseInt(this.elements.headerCaptionFontsizeInput.value, 10);
-        newConfig.headerSubcaptionFontSize = parseInt(this.elements.headerSubcaptionFontsizeInput.value, 10);
-        newConfig.headerBackgroundColor = this.elements.headerBgColorInput.value;
-        newConfig.mainBackgroundColor = this.elements.mainBgColorInput.value;
-        newConfig.showLogo = this.elements.showLogoCheckbox.checked;
-        newConfig.showHeaderBg = this.elements.showHeaderBgCheckbox.checked;
-        newConfig.showMainBg = this.elements.showMainBgCheckbox.checked;
-        newConfig.logo = await this.getImagePickerValue(this.elements.logoPickerContainer);
-        newConfig.headerBackground = await this.getImagePickerValue(this.elements.headerBgPickerContainer);
-        newConfig.mainBackground = await this.getImagePickerValue(this.elements.mainBgPickerContainer);
-        newConfig.contentRotation = { enabled: this.elements.rotationEnabledCheckbox.checked, sequence: [] };
+        const newConfig = { 
+            pinHash: currentConfig.pinHash,
+            
+            // ** MODIFIED TO USE THE NEW FUNCTION **
+            logo: await this.getFinalImagePickerValue(this.elements.logoPickerContainer),
+            headerBackground: await this.getFinalImagePickerValue(this.elements.headerBgPickerContainer),
+            mainBackground: await this.getFinalImagePickerValue(this.elements.mainBgPickerContainer),
+            
+            // Your original code for other settings
+            apiUrl: this.elements.apiUrlInput.value.trim(),
+            interval: parseInt(this.elements.intervalInput.value, 10) || 30,
+            retentionHours: parseInt(this.elements.retentionInput.value, 10) || 48,
+            headerCaption: this.elements.headerCaptionInput.value.trim(),
+            headerSubCaption: this.elements.headerSubCaptionInput.value.trim(),
+            headerCaptionFontSize: parseInt(this.elements.headerCaptionFontsizeInput.value, 10),
+            headerSubcaptionFontSize: parseInt(this.elements.headerSubcaptionFontsizeInput.value, 10),
+            headerBackgroundColor: this.elements.headerBgColorInput.value,
+            mainBackgroundColor: this.elements.mainBgColorInput.value,
+            showLogo: this.elements.showLogoCheckbox.checked,
+            showHeaderBg: this.elements.showHeaderBgCheckbox.checked,
+            showMainBg: this.elements.showMainBgCheckbox.checked,
+            contentRotation: { enabled: this.elements.rotationEnabledCheckbox.checked, sequence: [] },
+            barChartStyling: { barColor: this.elements.barColorInput.value, rangeTextColor: this.elements.barRangeTextColorInput.value, labelTextColor: this.elements.barLabelTextColorInput.value, valueTextColor: this.elements.barValueTextColorInput.value, unitTextColor: this.elements.barUnitTextColorInput.value, rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10) },
+            modeStatusKey: this.elements.modeKeyInput.value.trim(),
+            operationModes: [],
+            params: [] 
+        };
+        
         const rotationItems = Array.from(this.elements.rotationList.querySelectorAll('.rotation-row'));
         const sequencePromises = rotationItems.map(async (row) => {
             const type = row.dataset.type;
@@ -374,17 +400,15 @@ export const settings = {
             };
             if (type !== 'graph') {
                 const pickerContainer = row.querySelector('.image-picker-container');
-                itemConfig.source = await this.getImagePickerValue(pickerContainer);
+                itemConfig.source = await this.getFinalImagePickerValue(pickerContainer);
             }
             return itemConfig;
         });
         newConfig.contentRotation.sequence = await Promise.all(sequencePromises);
-        newConfig.barChartStyling = { barColor: this.elements.barColorInput.value, rangeTextColor: this.elements.barRangeTextColorInput.value, labelTextColor: this.elements.barLabelTextColorInput.value, valueTextColor: this.elements.barValueTextColorInput.value, unitTextColor: this.elements.barUnitTextColorInput.value, rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10) };
-        newConfig.modeStatusKey = this.elements.modeKeyInput.value.trim();
-        newConfig.operationModes = [];
+        
         this.elements.modeValuesContainer.querySelectorAll('.mode-value-row').forEach(row => { const name = row.querySelector('label').textContent; const value = row.querySelector('input').value.trim(); newConfig.operationModes.push({ name, value }); });
-        newConfig.params = [];
         this.elements.parameterList.querySelectorAll('.parameter-row').forEach(row => { newConfig.params.push({ displayName: row.querySelector('.param-displayName').value.trim(), jsonKey: row.querySelector('.param-jsonKey').value.trim(), unit: row.querySelector('.param-unit').value.trim(), type: row.querySelector('.param-type').value, mode: row.querySelector('.param-mode').value, formula: row.querySelector('.param-formula').value.trim() || 'x', min: parseFloat(row.querySelector('.param-min').value) || 0, max: parseFloat(row.querySelector('.param-max').value) || 100, displayMax: parseFloat(row.querySelector('.param-displayMax').value) || null, sim_initial: parseFloat(row.querySelector('.param-sim-initial').value), sim_range: parseFloat(row.querySelector('.param-sim-range').value), sim_min: parseFloat(row.querySelector('.param-sim-min').value), sim_max: parseFloat(row.querySelector('.param-sim-max').value) }); });
+        
         return newConfig;
     },
 
@@ -402,9 +426,15 @@ export const settings = {
         this.elements.showLogoCheckbox.checked = config.showLogo ?? true;
         this.elements.showHeaderBgCheckbox.checked = config.showHeaderBg ?? true;
         this.elements.showMainBgCheckbox.checked = config.showMainBg ?? true;
+        
+        // ** MODIFIED TO USE THE NEW UI AND LOGIC **
+        this.createImagePicker(this.elements.logoPickerContainer, "logo", "image");
         this.setImagePickerValue(this.elements.logoPickerContainer, config.logo);
+        this.createImagePicker(this.elements.headerBgPickerContainer, "headerBg", "image");
         this.setImagePickerValue(this.elements.headerBgPickerContainer, config.headerBackground);
+        this.createImagePicker(this.elements.mainBgPickerContainer, "mainBg", "image");
         this.setImagePickerValue(this.elements.mainBgPickerContainer, config.mainBackground);
+        
         const rotationConfig = config.contentRotation;
         if (rotationConfig) {
             this.elements.rotationEnabledCheckbox.checked = rotationConfig.enabled;
@@ -443,6 +473,7 @@ export const settings = {
 
     async save() {
         this.elements.feedback.textContent = 'Saving to server...';
+        this.elements.saveBtn.disabled = true;
         
         try {
             const newConfig = await this.getCurrentUIConfig();
@@ -456,26 +487,27 @@ export const settings = {
             const result = await response.json();
 
             if (!result.success) {
-                // The 'error' key is what our PHP script sends on failure
                 throw new Error(result.error || 'Failed to save settings.');
             }
 
-            // On success, update the local state and provide feedback
             state.setConfig(newConfig);
-            this.elements.feedback.textContent = 'Settings saved to server!';
+            this.elements.feedback.textContent = 'Settings saved successfully!';
             state.setSettingsChanged(false);
+            
+            // Re-populate the form to update the UI and the data attributes
+            this.applyConfigToUI(newConfig);
             
             setTimeout(() => { this.elements.feedback.textContent = ''; }, 4000);
             
-            // Re-initialize the dashboard with the new settings
             if (this._initializeDashboardCallback) {
                 await this._initializeDashboardCallback(true);
             }
 
         } catch (error) {
             console.error("Save Error:", error);
-            // Display the specific error message from the `throw new Error(...)` line
             this.elements.feedback.textContent = `Error: ${error.message}`;
+        } finally {
+            this.elements.saveBtn.disabled = false;
         }
     },
     
@@ -501,15 +533,17 @@ export const settings = {
     async restoreDefaults() {
         this.elements.feedback.textContent = 'Restoring defaults...';
         try {
-            const settingsResponse = await fetch('api/settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'restore_defaults' }) });
-            if (!settingsResponse.ok) { throw new Error('Server failed to restore defaults.'); }
+            const settingsResponse = await fetch('api/settings.php?action=reset', { method: 'GET' });
+            const settingsResult = await settingsResponse.json();
+            if (!settingsResult.success) throw new Error(settingsResult.error || 'Server failed to restore settings.');
 
             const graphResponse = await fetch('api/graph_data.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'clear_history' })
             });
-            if (!graphResponse.ok) { console.error('Could not clear graph history on server.'); }
+            const graphResult = await graphResponse.json();
+             if (!graphResult.success) console.error('Could not clear graph history on server.');
 
             location.reload();
         } catch (error) {
@@ -580,11 +614,6 @@ export const settings = {
 
     init(initializeDashboardCallback) {
         this._initializeDashboardCallback = initializeDashboardCallback;
-
-        // Create the pickers
-        this.createImagePicker(this.elements.logoPickerContainer, "logo", "image");
-        this.createImagePicker(this.elements.headerBgPickerContainer, "headerBg", "image");
-        this.createImagePicker(this.elements.mainBgPickerContainer, "mainBg", "image");
 
         const inputFieldClasses = "w-full bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 disabled:bg-gray-400 focus:ring-1 focus:border-indigo-500";
         document.querySelectorAll(".settings-input").forEach(el => {
