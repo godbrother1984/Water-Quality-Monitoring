@@ -7,14 +7,14 @@ export const dashboard = {
     _cacheElements() {
         this.elements = {
             logo: document.getElementById('dashboard-logo'),
-            title: document.getElementById('dashboard-title'),
-            subtitle: document.getElementById('dashboard-subtitle'),
+            title: document.getElementById('header-caption'),
+            subtitle: document.getElementById('header-subcaption'),
             header: document.getElementById('dashboard-header'),
             mainContainer: document.getElementById('view-dashboard'),
             chartContainer: document.getElementById('dashboard-chart-container'),
-            barChartEl: document.getElementById('dashboard-chart'),
+            barChartEl: document.getElementById('dashboardBarChart'),
             valuesContainer: document.getElementById('dashboard-values-container'),
-            operationModes: document.getElementById('dashboard-operation-modes')
+            operationModes: document.getElementById('operation-mode-lights')
         };
     },
 
