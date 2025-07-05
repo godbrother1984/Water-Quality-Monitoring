@@ -62,7 +62,7 @@
         "valueFontSize": 18,
         "unitFontSize": 18
     },
-    "modeStatusKey": "",
+    "modeStatusKey": "operation_mode",
     "operationModes": [],
     "params": [
         {
